@@ -1,0 +1,10 @@
+ Windows.
+Winpthreads, a pthreads library for C++11 threading support and simple integration with existing project.
+Winstorecompat, a work-in-progress convenience library that eases conformance with the Windows Store.
+Better-conforming and faster math support compared to VisualStudio's.
+Tools
+gendef: generate Visual Studio .def files from .dll files.
+genidl: generate .idl files from .dll files.
+widl: compile .idl files.
+Friend projects
+Mingw-w64 interacts a lot with other projects in order to help everyone move forward. Contributions have been going to and coming from these projects:
