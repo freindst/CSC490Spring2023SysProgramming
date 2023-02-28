@@ -19,7 +19,7 @@ char * peek(astack * s);
 
 void destroyStack(astack * s);
 
-void main(){
+int main(){
     char * oldPath = "genesis.txt";
     char * newPath = "genesis_line_reversed.txt";
 
@@ -62,6 +62,8 @@ void main(){
 
     free(lineBuffer);
     destroyStack(&s);
+
+    return 0;
 }
 
 struct myStack initiate(int s_size){
