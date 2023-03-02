@@ -78,15 +78,15 @@ void Push(char * str, Stack * stack){
 
 char * Pop(Stack *stack){
     char * ret;
-    ret = stack->List[stack->Counter];
-    stack->List[stack->Counter] = "";
+    ret = stack->List[stack->Counter - 1];
+    stack->List[stack->Counter - 1] = "";
     stack->Counter = stack->Counter - 1;
     return ret;
 }
 
 char * Peek(Stack *stack){
     char * ret;
-    strcpy(ret, stack->List[stack->Counter]);
+    strcpy(ret, stack->List[stack->Counter - 1]);
     return ret;
 }
 
