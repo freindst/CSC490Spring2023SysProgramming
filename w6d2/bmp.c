@@ -6,7 +6,7 @@ unsigned int bitsToInt(char * bits);
 int main(){
     FILE * inputStream, * outputStream;
     inputStream = fopen("darthvador.bmp", "rb");
-    //outputStream = fopen("mirrored.bmp", "wb");
+    outputStream = fopen("mirrored.bmp", "wb");
 
     char intBuf[4];
 
@@ -31,11 +31,38 @@ int main(){
     fread(intBuf, 4, 1, inputStream);
     width = bitsToInt(intBuf);
 
-    printf("File size is %d bits\n", size);
-    printf("File width is %d bits\n", width);
-    printf("File height is %d bits\n", height);
+    char * readBuffer;
+    char * writeBuffer;
+    readBuffer = malloc(size);
+    writeBuffer = malloc(size);
+
+    fseek(inputStream, 0, SEEK_SET);
+    fread(readBuffer, size, 1, inputStream);
+
+    for(int i = 0; i < 54; i++){
+        writeBuffer[i] = readBuffer[i];
+    }
+    for(int y = 0; y < height; y++){
+        for (int x = 0; x < width; x++){
+            int old_pixel = y * width + x;
+            int new_pixel;
+            new_pixel = y * width + (width - x - 1);
+            for (int i = 0; i < 3; i++){
+                int old_index, new_index;
+                old_index = 54 + old_pixel * 3 + i;
+                new_index = 54 + new_pixel * 3 + i;
+                writeBuffer[new_index] = readBuffer[old_index];
+            }
+        }
+    }
+
+    fwrite(writeBuffer, size, 1, outputStream);
 
     fclose(inputStream);
+    fclose(outputStream);
+
+    free(readBuffer);
+    free(writeBuffer);
 
     return 0;
 }
