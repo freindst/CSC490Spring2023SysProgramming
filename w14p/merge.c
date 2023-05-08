@@ -12,61 +12,11 @@ pthread_t threads[4];
 int counter = 0;
 pthread_mutex_t mutex;
 
-void merge(int * arr, int low, int mid, int high);
-
-void printArr(int * arr);
-
-void merge_sort(int * arr, int low, int high);
-
-void * pthread_merge_sort(void * arg);
-
-void * pthread_merge(void * arg){
-    //lock
-    int low = 0;
-    int high = size - 1;
-    pthread_mutex_lock(&mutex);
-    if (counter == 4){
-        counter++;
-        int mid = low + (high - low + 1) / 4;
-        int cur_high = (high + low) / 2;
-        merge(arr, low, mid, cur_high);
-    } else {
-        counter++;
-        int cur_low = (high + low) / 2 + 1;
-        int mid = high - (high - low + 1) / 4;
-        merge(arr, cur_low, mid, high);
-    }
-    pthread_mutex_unlock(&mutex);
-    //unlock
-    return NULL;
-}
-
-void * pthread_merge_sort(void * arg){
-    int low =  0;
-    int high = size - 1;
-    pthread_mutex_lock(&mutex);
-    if (counter == 0){
-        merge_sort(arr, 0, low + (high - low + 1) / 4);
-    } else if(counter == 1){
-        merge_sort(arr, low + (high - low + 1) / 4 + 1, (high + low) / 2);
-    } else if(counter == 2){
-        merge_sort(arr, (high + low) / 2 + 1, high - (high - low + 1) / 4);
-    } else {
-        merge_sort(arr, high - (high - low + 1) / 4 + 1, high);
-    }
-    counter++;
-    pthread_mutex_unlock(&mutex);
-    return NULL;
-}
-
-void randomArrayGenerator(int * arr);
-
 //arr, low, mid, high
 //lower: 7
 //upper: 
 //sorted: 1, 2, 3, 4, 5, 6, 7
 void merge(int * arr, int low, int mid, int high){
-    //printf("low is %d, mid is %d, high is %d\n", low, mid, high);
     int * lower, * upper;
     lower = malloc(sizeof(int) * (mid - low + 1));
     upper = malloc(sizeof(int) * (high - mid));
@@ -107,6 +57,48 @@ void merge(int * arr, int low, int mid, int high){
     free(upper);
 }
 
+
+//divide the array into two and recursively call merge_sort
+void merge_sort(int * arr, int low, int high){
+    if (low < high){
+        int mid = (high + low) / 2;
+        merge_sort(arr, low, mid);
+        merge_sort(arr, mid + 1, high);
+        merge(arr, low, mid, high);
+    }
+}
+
+void * pthread_merge_sort(void * arg){
+    int low =  0;
+    int high = size - 1;
+    if (counter == 0){
+        merge_sort(arr, 0, low + (high - low + 1) / 4);
+    } else if(counter == 1){
+        merge_sort(arr, low + (high - low + 1) / 4, (high + low) / 2);
+    } else if(counter == 2){
+        merge_sort(arr, (high + low) / 2 + 1, high - (high - low + 1) / 4);
+    } else {
+        merge_sort(arr, high - (high - low + 1) / 4 + 1, high);
+    }
+    counter++;
+    return NULL;
+}
+
+void * pthread_merge(void * arg){
+    int low =  0;
+    int high = size - 1;
+    if (counter == 4){
+        merge(arr, low, low + (high - low + 1) /4, (high + low) /2);
+    } else if (counter == 5){
+        merge(arr, (high + low) / 2 + 1, high - (high - low + 1) / 4, high);
+    } else {
+        merge(arr, low, (high + low) / 2, high);
+    }
+    counter++;
+    return NULL;
+}
+
+
 void printArr(int * arr){
     char * output;
     output = malloc(size * 4 + 1);
@@ -128,15 +120,6 @@ void printArr(int * arr){
     free(output);
 }
 
-//divide the array into two and recursively call merge_sort
-void merge_sort(int * arr, int low, int high){
-    if (low < high){
-        int mid = (high + low) / 2;
-        merge_sort(arr, low, mid);
-        merge_sort(arr, mid + 1, high);
-        merge(arr, low, mid, high);
-    }
-}
 
 void randomArrayGenerator(int * arr){
     for(int i = 0; i < size; i++){
@@ -156,8 +139,10 @@ void randomArrayGenerator(int * arr){
 
 int main(){
     pthread_mutex_init(&mutex, NULL);
-    struct timeval start_time, end_time;
-    gettimeofday(&start_time, NULL);
+    struct timeval start, stop;
+    double secs = 0;
+
+    gettimeofday(&start, NULL);
     //make your random array
     //merge sort
     //multithreading merge sort
@@ -167,31 +152,39 @@ int main(){
     printArr(arr);
     //merge_sort(arr, 0, size - 1);
     //replace with multi-threading manner
+    int low = 0;
+    int high = size - 1;
+    int pivot1 = low + (high - low + 1) / 4;
+    int pivot2 = (high + low) / 2;
+    int pivot3 = high - (high - low + 1) / 4;
     for(int i = 0; i < 4; i++){
         pthread_create(&threads[i], NULL, pthread_merge_sort, NULL);
     }
     for(int i = 0; i < 4; i++){
         pthread_join(threads[i], NULL);
     }
-    printf("First Round Sorted array is: \n");
     printArr(arr);
     //call threads to merge first half and second half
-    pthread_create(&threads[0], NULL, pthread_merge, NULL);
+    /*for(int i = 0; i < 2; i++){
+        pthread_create(&threads[i], NULL, pthread_merge, NULL);
+        pthread_join(threads[i], NULL);
+    }*/
+    /*pthread_create(&threads[0], NULL, pthread_merge, NULL);
     pthread_join(threads[0], NULL);
     pthread_create(&threads[1], NULL, pthread_merge, NULL);
-    pthread_join(threads[1], NULL);
-    printf("Second Round Sorted array is: \n");
+    pthread_join(threads[1], NULL);*/
+    pthread_merge(NULL);
+    pthread_merge(NULL);
     printArr(arr);
     //call thread to merge the whole array.
-    int low = 0;
-    int high = size - 1;
-    merge(arr, low, (low + high) / 2, high);
-    printf("Final Round Sorted array is: \n");
+    pthread_create(&threads[0], NULL, pthread_merge, NULL);
+    pthread_join(threads[0], NULL);
+    printf("Sorted array is: \n");
     printArr(arr);
+    gettimeofday(&stop, NULL);
+    secs = (double)(stop.tv_usec - start.tv_usec) / 1000 + (double)(stop.tv_sec - start.tv_sec);
+    printf("time taken %f\n",secs);
     free(arr);
-    gettimeofday(&end_time, NULL);
-    long ms = (end_time.tv_usec - start_time.tv_usec);
-    printf("The running time is %ld ms.\n", ms);
     pthread_mutex_destroy(&mutex);
     return 0;
 }
