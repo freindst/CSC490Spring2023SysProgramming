@@ -3,6 +3,21 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+
+//1. we open a file on hard drive
+//fd = open("genesis.txt", READ);
+//2. we copy all the characters from the file to an array on memory
+//2.1 have a new array as the placeholder for the file characters
+//char temp[2000]
+//2.2 read all the characters from fd into temp
+//ss = read(fd, temp, 2000);
+//close(fd);
+//3. we open a new file on hard drive
+//fd1 = open("genesis_copy.txt", READ_WRITE, 0644);
+//4. we copy the array of characters from the memory to the new file on hard drive.
+//ss = write(fd1, temp, 2000)
+//close(fd1);
+
 //make a copy of a file
 int main(){
     //char * buf;
